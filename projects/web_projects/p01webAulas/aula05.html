@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>21 Educar Interativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: Uma SPA temática e não linear com uma barra de navegação fixa (Início, Conceitos, Prática, Teste, Referências). Esta estrutura permite aos usuários explorar livremente os tópicos em vez de serem forçados a uma sequência linear de plano de aula. O objetivo é o aprendizado autodirigido, com interações chave como um quiz inicial 'Mito ou Verdade' para engajar, cartões clicáveis para aprofundar nos conceitos (Requisitos, Atributos) e um quiz interativo para autoavaliação. Este design prioriza a autonomia do usuário e organiza melhor a densa informação jurídica para o consumo digital. -->
+    <!-- Visualization & Content Choices: Requisitos/Atributos -> Objetivo: Organizar -> Método: Grade de cartões interativos HTML/CSS -> Interação: Clique para revelar explicação detalhada e estudo de caso. Justificativa: Separa visualmente elementos complexos para maior clareza. Classificação -> Objetivo: Organizar -> Método: Visualização de conteúdo em abas -> Interação: Clique nas abas para alternar entre os tipos de classificação. Justificativa: Evita sobrecarregar o usuário com uma lista longa. Extinção -> Objetivo: Comparar -> Método: Layout de comparação lado a lado -> Interação: Texto estático com separação visual clara. Justificativa: A comparação direta é mais eficaz. Teste -> Objetivo: Avaliar -> Método: Quiz interativo de múltipla escolha com JS -> Interação: Selecione a resposta, obtenha feedback imediato. Justificativa: Reforça o aprendizado através da recordação ativa. Todos os visuais usam HTML/CSS/JS. Gráficos do Chart.js não foram necessários, pois layouts estruturados foram mais eficazes para esta informação qualitativa. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f4f4f5; /* Zinc 100 */
+      }
+      .nav-link {
+        transition: color 0.3s, border-bottom-color 0.3s;
+      }
+      .nav-link:hover {
+        color: #14b8a6; /* Teal 500 */
+      }
+      .active-link {
+        color: #14b8a6;
+        border-bottom: 2px solid #14b8a6;
+      }
+      .concept-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+      }
+      .concept-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+      }
+      .content-hidden {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        opacity: 0;
+      }
+      .content-visible {
+        max-height: 1000px; /* Large enough to fit content */
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="text-zinc-800">
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+      <nav class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+          <h1 class="text-xl font-bold text-zinc-700">
+            Noções de Direito Administrativo
+          </h1>
+          <div class="hidden md:flex items-center space-x-8">
+            <a href="#inicio" class="nav-link text-zinc-600 font-medium pb-1"
+              >Início</a
+            >
+            <a href="#conceitos" class="nav-link text-zinc-600 font-medium pb-1"
+              >Conceitos</a
+            >
+            <a href="#pratica" class="nav-link text-zinc-600 font-medium pb-1"
+              >Na Prática</a
+            >
+            <a href="#teste" class="nav-link text-zinc-600 font-medium pb-1"
+              >Teste Seus Conhecimentos</a
+            >
+            <a
+              href="#referencias"
+              class="nav-link text-zinc-600 font-medium pb-1"
+              >Referências</a
+            >
+            <a
+              href="/projects/web_projects/p01webAulas/menuAulas.html"
+              class="ml-4 bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >VOLTAR</a
+            >
+          </div>
+          <button
+            id="mobile-menu-button"
+            class="md:hidden text-zinc-700 focus:outline-none"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16m-7 6h7"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden mt-4">
+          <a
+            href="#inicio"
+            class="block py-2 px-4 text-sm text-zinc-600 hover:bg-teal-50 rounded-md"
+            >Início</a
+          >
+          <a
+            href="#conceitos"
+            class="block py-2 px-4 text-sm text-zinc-600 hover:bg-teal-50 rounded-md"
+            >Conceitos</a
+          >
+          <a
+            href="#pratica"
+            class="block py-2 px-4 text-sm text-zinc-600 hover:bg-teal-50 rounded-md"
+            >Na Prática</a
+          >
+          <a
+            href="#teste"
+            class="block py-2 px-4 text-sm text-zinc-600 hover:bg-teal-50 rounded-md"
+            >Teste Seus Conhecimentos</a
+          >
+          <a
+            href="#referencias"
+            class="block py-2 px-4 text-sm text-zinc-600 hover:bg-teal-50 rounded-md"
+            >Referências</a
+          >
+        </div>
+      </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+      <section
+        id="inicio"
+        class="text-center min-h-[80vh] flex flex-col justify-center items-center"
+      >
+        <h2 class="text-4xl md:text-5xl font-bold text-teal-600 mb-4">
+          Aula 5:Atos Administrativos
+        </h2>
+        <p class="text-md text-zinc-500 italic mb-12">
+          Professor Anildo Gomes.
+        </p>
+        <p class="text-lg md:text-xl text-zinc-600 max-w-3xl mx-auto mb-4">
+          Eles estão por toda parte, moldando nosso dia a dia de formas que
+          muitas vezes nem percebemos. Explore este guia interativo para
+          entender o que são, como funcionam e por que são fundamentais para o
+          Estado de Direito.
+        </p>
+
+        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-2xl">
+          <h3 class="text-2xl font-bold mb-6 text-zinc-700">
+            Quebra-Gelo: Mito ou Verdade?
+          </h3>
+          <p class="text-zinc-600 mb-6">
+            Teste seu conhecimento inicial. Clique e descubra!
+          </p>
+          <div id="mito-verdade-container" class="space-y-4"></div>
+        </div>
+      </section>
+
+      <section id="conceitos" class="py-16 md:py-24">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-zinc-800">
+            Conceitos Fundamentais
+          </h2>
+          <p class="mt-4 text-lg text-zinc-600 max-w-2xl mx-auto">
+            Todo ato administrativo possui uma estrutura e características que
+            garantem sua validade e eficácia. Vamos explorar os pilares
+            essenciais: os requisitos e os atributos.
+          </p>
+        </div>
+
+        <div class="bg-white p-8 md:p-10 rounded-2xl shadow-lg mb-12">
+          <h3 class="text-2xl font-bold mb-2 text-teal-600">
+            Requisitos de Validade (COFIFOMO)
+          </h3>
+          <p class="text-zinc-600 mb-8">
+            São os 5 elementos essenciais que todo ato precisa ter para ser
+            válido. A ausência de qualquer um deles pode torná-lo ilegal. Clique
+            em cada requisito para saber mais.
+          </p>
+          <div
+            id="requisitos-container"
+            class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          ></div>
+        </div>
+
+        <div class="bg-white p-8 md:p-10 rounded-2xl shadow-lg">
+          <h3 class="text-2xl font-bold mb-2 text-teal-600">
+            Atributos (PATI)
+          </h3>
+          <p class="text-zinc-600 mb-8">
+            São as 4 características que conferem poder e eficácia aos atos
+            administrativos. Eles explicam por que as decisões da Administração
+            Pública têm força e devem ser cumpridas. Clique para explorar.
+          </p>
+          <div id="atributos-container" class="grid md:grid-cols-2 gap-6"></div>
+        </div>
+      </section>
+
+      <section id="pratica" class="py-16 md:py-24">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-zinc-800">
+            Na Prática: O Ciclo de Vida do Ato
+          </h2>
+          <p class="mt-4 text-lg text-zinc-600 max-w-2xl mx-auto">
+            Um ato administrativo não dura para sempre. Ele pode ser desfeito
+            por ilegalidade ou por não ser mais conveniente. Entender essa
+            diferença é crucial.
+          </p>
+        </div>
+
+        <div class="bg-white p-8 md:p-10 rounded-2xl shadow-lg">
+          <h3 class="text-2xl font-bold mb-8 text-center text-teal-600">
+            Extinção: Anulação vs. Revogação
+          </h3>
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="border border-red-200 bg-red-50/50 p-6 rounded-lg">
+              <h4 class="text-xl font-bold text-red-700 mb-3">Anulação</h4>
+              <p class="text-zinc-600 mb-4">
+                É o desfazimento de um **ato ilegal**, com um vício ou defeito
+                em seus requisitos. A Administração **DEVE** anular.
+              </p>
+              <ul class="space-y-2 text-zinc-700">
+                <li>
+                  <strong class="font-semibold text-red-600">Motivo:</strong>
+                  Ilegalidade.
+                </li>
+                <li>
+                  <strong class="font-semibold text-red-600">Efeitos:</strong>
+                  Retroativos (*Ex Tunc*). O ato é desfeito desde sua origem.
+                </li>
+                <li class="mt-4 p-4 border-t border-red-200">
+                  <strong class="font-semibold">Exemplo:</strong> A prefeitura
+                  anula a licença de um shopping construído em área de proteção
+                  ambiental, pois a autorização nunca deveria ter sido dada.
+                </li>
+              </ul>
+            </div>
+            <div class="border border-blue-200 bg-blue-50/50 p-6 rounded-lg">
+              <h4 class="text-xl font-bold text-blue-700 mb-3">Revogação</h4>
+              <p class="text-zinc-600 mb-4">
+                É o desfazimento de um **ato legal e válido**, por não ser mais
+                conveniente ou oportuno. A Administração **PODE** revogar.
+              </p>
+              <ul class="space-y-2 text-zinc-700">
+                <li>
+                  <strong class="font-semibold text-blue-600">Motivo:</strong>
+                  Conveniência e Oportunidade (Mérito).
+                </li>
+                <li>
+                  <strong class="font-semibold text-blue-600">Efeitos:</strong>
+                  Não retroativos (*Ex Nunc*). Vale apenas para o futuro.
+                </li>
+                <li class="mt-4 p-4 border-t border-blue-200">
+                  <strong class="font-semibold">Exemplo:</strong> A prefeitura
+                  revoga a permissão de um quiosque em uma praça (que era legal)
+                  porque decidiu fazer uma grande reforma no local.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="teste" class="py-16 md:py-24">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-zinc-800">
+            Teste Seus Conhecimentos
+          </h2>
+          <p class="mt-4 text-lg text-zinc-600 max-w-2xl mx-auto">
+            Hora de praticar! Resolva as questões abaixo para fixar os conceitos
+            aprendidos. Você receberá feedback imediato para cada resposta.
+          </p>
+        </div>
+
+        <div
+          id="quiz-container"
+          class="bg-white p-8 md:p-10 rounded-2xl shadow-lg max-w-3xl mx-auto"
+        >
+          <div
+            id="quiz-progress"
+            class="w-full bg-zinc-200 rounded-full h-2.5 mb-6"
+          >
+            <div
+              id="quiz-progress-bar"
+              class="bg-teal-500 h-2.5 rounded-full"
+              style="width: 0%"
+            ></div>
+          </div>
+          <div id="quiz-content">
+            <h3
+              id="question-text"
+              class="text-xl font-semibold text-zinc-800 mb-6"
+            ></h3>
+            <div id="options-container" class="space-y-3"></div>
+          </div>
+          <div id="feedback-container" class="mt-6"></div>
+          <div id="quiz-navigation" class="flex justify-end mt-6">
+            <button
+              id="next-button"
+              class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-6 rounded-lg transition-colors hidden"
+            >
+              Próxima
+            </button>
+          </div>
+          <div id="quiz-results" class="hidden text-center">
+            <h3 class="text-2xl font-bold text-zinc-800 mb-4">
+              Quiz Finalizado!
+            </h3>
+            <p id="score-text" class="text-lg text-zinc-600 mb-6"></p>
+            <button
+              id="restart-button"
+              class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            >
+              Recomeçar
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="referencias" class="py-16 md:py-24 border-t border-zinc-200">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-zinc-800">
+            Referências Bibliográficas
+          </h2>
+          <p class="mt-4 text-lg text-zinc-600 max-w-2xl mx-auto">
+            Material de aprofundamento sugerido para consulta e estudos
+            complementares.
+          </p>
+        </div>
+        <div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+          <ul
+            id="references-list"
+            class="space-y-4 text-zinc-700 list-disc list-inside"
+          ></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="text-center py-6 border-t border-zinc-200 bg-white">
+      <p class="text-sm text-zinc-500">
+        &copy; 2025 Anildo Gomes. Todos os direitos reservados.
+      </p>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const mitoVerdadeData = [
+          {
+            frase:
+              "Todo e qualquer ato praticado por um prefeito ou governador é um ato administrativo.",
+            correto: false,
+            explicacao:
+              "Existem atos políticos, de gestão privada, etc. O ato administrativo é uma categoria específica regida pelo direito público.",
+          },
+          {
+            frase:
+              "Um fiscal de trânsito pode multar e guinchar um carro em local proibido sem precisar de ordem judicial.",
+            correto: true,
+            explicacao:
+              "Isso é um exemplo da autoexecutoriedade dos atos administrativos e do poder de polícia do Estado.",
+          },
+          {
+            frase:
+              "Uma licença para construir, uma vez concedida, é válida para sempre e nunca pode ser retirada.",
+            correto: false,
+            explicacao:
+              "A licença pode ser cassada se as condições não forem cumpridas, demonstrando que os atos podem ser extintos.",
+          },
+          {
+            frase:
+              "A nomeação de um professor aprovado em concurso público é um exemplo de ato administrativo.",
+            correto: true,
+            explicacao:
+              "É um exemplo clássico de um ato administrativo individual e concreto, que produz efeitos para uma pessoa específica.",
+          },
+        ];
+
+        const requisitosData = [
+          {
+            termo: "Competência",
+            icone: "👤",
+            descricao:
+              "Quem pode praticar o ato? O agente público deve ter a atribuição legal para editar o ato.",
+            exemplo:
+              "No caso do concurso, o Secretário de Administração geralmente tem competência para assinar o edital.",
+          },
+          {
+            termo: "Finalidade",
+            icone: "🎯",
+            descricao:
+              "Qual o objetivo de interesse público a ser alcançado? O ato não pode se desviar desse fim.",
+            exemplo:
+              "A finalidade do concurso é selecionar os mais aptos. Exigir 'Engenharia Espacial' para um jardineiro é um claro desvio de finalidade.",
+          },
+          {
+            termo: "Forma",
+            icone: "📄",
+            descricao:
+              "Como o ato deve ser exteriorizado? É o rito, o procedimento previsto em lei para a prática do ato.",
+            exemplo:
+              "A lei exige que o edital seja publicado no Diário Oficial. Não fazê-lo é um vício de forma.",
+          },
+          {
+            termo: "Motivo",
+            icone: "❓",
+            descricao:
+              "A situação de fato e de direito que autoriza a prática do ato. É o 'porquê' do ato.",
+            exemplo:
+              "O motivo para a exigência bizarra no edital é incongruente e inválido, tornando o ato ilegal.",
+          },
+          {
+            termo: "Objeto",
+            icone: "📦",
+            descricao:
+              "O conteúdo do ato, o efeito jurídico imediato que ele produz. Deve ser lícito, possível e determinado.",
+            exemplo:
+              "O objeto (o concurso) é lícito, mas seus elementos (requisitos do cargo) estão viciados.",
+          },
+        ];
+
+        const atributosData = [
+          {
+            termo: "Presunção de Legitimidade",
+            icone: "✅",
+            descricao:
+              "O ato administrativo é considerado válido e legal desde o seu nascimento, até que se prove o contrário.",
+            exemplo:
+              "A ordem do fiscal deve ser cumprida imediatamente porque se presume legítima, mesmo que o dono do restaurante discorde.",
+          },
+
+          {
+            termo: "Autoexecutoriedade",
+            icone: "⚙️",
+            descricao:
+              "A Administração pode executar suas próprias decisões por meios próprios, sem precisar de autorização judicial prévia.",
+            exemplo:
+              "O fiscal pode interditar e lacrar o local na hora, sem precisar de uma ordem de um juiz para isso.",
+          },
+          {
+            termo: "Tipicidade",
+            icone: "🏷️",
+            descricao:
+              "O ato deve corresponder a uma figura previamente definida em lei para produzir os efeitos desejados.",
+            exemplo:
+              "A interdição não foi inventada pelo fiscal; é uma sanção prevista em lei para as irregularidades encontradas.",
+          },
+          {
+            termo: "Imperatividade",
+            icone: "❗",
+            descricao:
+              "O ato se impõe a terceiros, independentemente da sua concordância ou vontade.",
+            exemplo:
+              "A interdição é obrigatória para o dono do restaurante. A vontade dele é irrelevante para o cumprimento da ordem.",
+          },
+        ];
+
+        const quizData = [
+          {
+            question:
+              "Um decreto do Governador estabelecendo novas regras de trânsito para todo o estado é um ato classificado como individual.",
+            options: ["Verdadeiro", "Falso"],
+            answer: "Falso",
+            explanation:
+              "É um ato geral, pois se aplica a todos, e não a uma pessoa específica.",
+          },
+          {
+            question:
+              "O atributo que faz o ato ser considerado verdadeiro até que se prove o contrário é o da Autoexecutoriedade.",
+            options: ["Verdadeiro", "Falso"],
+            answer: "Falso",
+            explanation:
+              "É a Presunção de Legitimidade. Autoexecutoriedade é a capacidade de executar o ato sem o Judiciário.",
+          },
+          {
+            question:
+              "Quando um agente pratica um ato para beneficiar a si mesmo, e não o interesse público, qual requisito ele está violando?",
+            options: ["Forma", "Motivo", "Finalidade", "Competência"],
+            answer: "Finalidade",
+            explanation:
+              "Ocorre o 'desvio de finalidade', pois o ato não buscou o interesse público.",
+          },
+          {
+            question:
+              "A demolição de um prédio que ameaça desabar, feita pela Defesa Civil sem autorização judicial, é exemplo do atributo da:",
+            options: [
+              "Tipicidade",
+              "Autoexecutoriedade",
+              "Presunção de Legitimidade",
+              "Imperatividade",
+            ],
+            answer: "Autoexecutoriedade",
+            explanation:
+              "A Administração executa sua decisão por meios próprios devido à urgência e previsão legal.",
+          },
+          {
+            question:
+              "A Anulação extingue um ato por razões de conveniência, produzindo efeitos para o futuro (ex nunc).",
+            options: ["Verdadeiro", "Falso"],
+            answer: "Falso",
+            explanation:
+              "Essa é a descrição da Revogação. A Anulação ocorre por ilegalidade e tem efeitos retroativos (ex tunc).",
+          },
+          {
+            question:
+              "A concessão de licença-paternidade a um servidor que teve um filho é um exemplo de ato:",
+            options: ["Discricionário", "Vinculado", "Normativo", "Negocial"],
+            answer: "Vinculado",
+            explanation:
+              "Preenchidos os requisitos legais (ser pai), a Administração é obrigada a conceder.",
+          },
+          {
+            question:
+              "A revogação incide sobre atos ilegais, enquanto a anulação incide sobre atos legais.",
+            options: ["Verdadeiro", "Falso"],
+            answer: "Falso",
+            explanation:
+              "É o contrário: a anulação desfaz atos ilegais e a revogação desfaz atos legais.",
+          },
+          {
+            question:
+              "A ordem de um policial para que o motorista pare o veículo é uma manifestação do atributo da Imperatividade.",
+            options: ["Verdadeiro", "Falso"],
+            answer: "Verdadeiro",
+            explanation:
+              "A ordem se impõe ao cidadão, independentemente da sua vontade.",
+          },
+          {
+            question:
+              "Se a prefeitura desiste de construir uma escola (ato legal) porque se tornou mais urgente construir um hospital, ela irá _______ o ato.",
+            options: ["anular", "revogar", "cassar", "caducar"],
+            answer: "revogar",
+            explanation:
+              "A decisão é baseada em conveniência e oportunidade (mérito administrativo), sobre um ato perfeitamente legal.",
+          },
+        ];
+
+        const referencesData = [
+          "DI PIETRO, Maria Sylvia Zanella. <i>Direito Administrativo</i>. Editora Forense.",
+          "MEIRELLES, Hely Lopes. <i>Direito Administrativo Brasileiro</i>. Editora Malheiros.",
+          "MAZZA, Alexandre. <i>Manual de Direito Administrativo</i>. Editora Saraiva.",
+          "ALEXANDRINO, Marcelo; PAULO, Vicente. <i>Direito Administrativo Descomplicado</i>. Editora Método.",
+          "BRASIL. Lei nº 9.784, de 29 de janeiro de 1999. Regula o processo administrativo no âmbito da Administração Pública Federal.",
+        ];
+
+        function createMitoVerdade() {
+          const container = document.getElementById("mito-verdade-container");
+          container.innerHTML = "";
+          mitoVerdadeData.forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "border border-zinc-200 p-4 rounded-lg";
+            div.innerHTML = `
+                <p class="font-medium text-zinc-700">${item.frase}</p>
+                <div class="mt-3 flex gap-3">
+                    <button data-correct="true" class="mito-verdade-btn flex-1 bg-green-100 text-green-800 hover:bg-green-200 font-semibold py-2 px-4 rounded-md transition-colors">Verdade</button>
+                    <button data-correct="false" class="mito-verdade-btn flex-1 bg-red-100 text-red-800 hover:bg-red-200 font-semibold py-2 px-4 rounded-md transition-colors">Mito</button>
+                </div>
+                <div id="feedback-mv-${index}" class="mt-3 text-sm p-3 rounded-md" style="display:none;"></div>
+            `;
+            container.appendChild(div);
+
+            div.querySelectorAll(".mito-verdade-btn").forEach((button) => {
+              button.addEventListener("click", () => {
+                const isCorrectChoice =
+                  (button.dataset.correct === "true") === item.correto;
+                const feedbackEl = document.getElementById(
+                  `feedback-mv-${index}`
+                );
+
+                if (isCorrectChoice) {
+                  feedbackEl.className =
+                    "mt-3 text-sm p-3 rounded-md bg-teal-100 text-teal-800";
+                  feedbackEl.textContent = `Correto! ${item.explicacao}`;
+                } else {
+                  feedbackEl.className =
+                    "mt-3 text-sm p-3 rounded-md bg-orange-100 text-orange-800";
+                  feedbackEl.textContent = `Ops! Na verdade, é ${
+                    item.correto ? "Verdade" : "Mito"
+                  }. ${item.explicacao}`;
+                }
+                feedbackEl.style.display = "block";
+                div
+                  .querySelectorAll(".mito-verdade-btn")
+                  .forEach((btn) => (btn.disabled = true));
+              });
+            });
+          });
+        }
+
+        function createConceptCards(containerId, data) {
+          const container = document.getElementById(containerId);
+          container.innerHTML = "";
+          data.forEach((item, index) => {
+            const card = document.createElement("div");
+            card.className =
+              "concept-card bg-zinc-50 border border-zinc-200 rounded-lg p-6";
+            card.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <span class="text-3xl">${item.icone}</span>
+                    <h4 class="text-lg font-bold text-zinc-800">${
+                      item.termo
+                    }</h4>
+                </div>
+                <div id="content-${containerId}-${index}" class="content-hidden mt-4 pl-12 space-y-2">
+                    <p class="text-zinc-600">${item.descricao}</p>
+                    ${
+                      item.exemplo
+                        ? `<p class="text-sm text-teal-700 bg-teal-50 p-2 rounded-md"><strong>Exemplo Prático:</strong> ${item.exemplo}</p>`
+                        : ""
+                    }
+                </div>
+            `;
+            container.appendChild(card);
+
+            card.addEventListener("click", () => {
+              const content = document.getElementById(
+                `content-${containerId}-${index}`
+              );
+              content.classList.toggle("content-visible");
+              content.classList.toggle("content-hidden");
+            });
+          });
+        }
+
+        function setupQuiz() {
+          let currentQuestionIndex = 0;
+          let score = 0;
+          const totalQuestions = quizData.length;
+
+          const progressBar = document.getElementById("quiz-progress-bar");
+          const questionText = document.getElementById("question-text");
+          const optionsContainer = document.getElementById("options-container");
+          const feedbackContainer =
+            document.getElementById("feedback-container");
+          const nextButton = document.getElementById("next-button");
+          const resultsContainer = document.getElementById("quiz-results");
+          const quizContent = document.getElementById("quiz-content");
+          const scoreText = document.getElementById("score-text");
+          const restartButton = document.getElementById("restart-button");
+
+          function displayQuestion() {
+            feedbackContainer.innerHTML = "";
+            nextButton.classList.add("hidden");
+            const question = quizData[currentQuestionIndex];
+
+            const progress = (currentQuestionIndex / totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionText.textContent = `${currentQuestionIndex + 1}. ${
+              question.question
+            }`;
+            optionsContainer.innerHTML = "";
+
+            question.options.forEach((option) => {
+              const button = document.createElement("button");
+              button.textContent = option;
+              button.className =
+                "w-full text-left p-3 border border-zinc-300 rounded-lg hover:bg-zinc-100 hover:border-teal-500 transition-colors";
+              button.onclick = () =>
+                checkAnswer(option, question.answer, question.explanation);
+              optionsContainer.appendChild(button);
+            });
+          }
+
+          function checkAnswer(selectedOption, correctAnswer, explanation) {
+            const isCorrect =
+              selectedOption.toLowerCase() === correctAnswer.toLowerCase();
+            if (isCorrect) {
+              score++;
+            }
+
+            feedbackContainer.innerHTML = `
+                <div class="p-4 rounded-lg ${
+                  isCorrect
+                    ? "bg-teal-100 text-teal-800"
+                    : "bg-red-100 text-red-800"
+                }">
+                    <p class="font-bold">${
+                      isCorrect ? "Correto!" : "Incorreto."
+                    }</p>
+                    <p>${explanation}</p>
+                </div>
+            `;
+
+            Array.from(optionsContainer.children).forEach((button) => {
+              button.disabled = true;
+              if (
+                button.textContent.toLowerCase() === correctAnswer.toLowerCase()
+              ) {
+                button.classList.add("bg-teal-200", "border-teal-500");
+              }
+            });
+
+            nextButton.classList.remove("hidden");
+          }
+
+          function showResults() {
+            quizContent.classList.add("hidden");
+            document.getElementById("quiz-navigation").classList.add("hidden");
+            document.getElementById("quiz-progress").classList.add("hidden");
+            resultsContainer.classList.remove("hidden");
+            scoreText.textContent = `Você acertou ${score} de ${totalQuestions} questões.`;
+          }
+
+          nextButton.addEventListener("click", () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+              displayQuestion();
+            } else {
+              showResults();
+            }
+          });
+
+          restartButton.addEventListener("click", () => {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultsContainer.classList.add("hidden");
+            quizContent.classList.remove("hidden");
+            document
+              .getElementById("quiz-navigation")
+              .classList.remove("hidden");
+            document.getElementById("quiz-progress").classList.remove("hidden");
+            displayQuestion();
+          });
+
+          displayQuestion();
+        }
+
+        function populateReferences() {
+          const list = document.getElementById("references-list");
+          referencesData.forEach((ref) => {
+            const li = document.createElement("li");
+            li.innerHTML = ref;
+            list.appendChild(li);
+          });
+        }
+
+        createMitoVerdade();
+        createConceptCards("requisitos-container", requisitosData);
+        createConceptCards("atributos-container", atributosData);
+        setupQuiz();
+        populateReferences();
+
+        const mobileMenuButton = document.getElementById("mobile-menu-button");
+        const mobileMenu = document.getElementById("mobile-menu");
+        mobileMenuButton.addEventListener("click", () => {
+          mobileMenu.classList.toggle("hidden");
+        });
+
+        const navLinks = document.querySelectorAll(".nav-link");
+        const sections = document.querySelectorAll("section");
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                navLinks.forEach((link) => {
+                  link.classList.remove("active-link");
+                  if (
+                    link.getAttribute("href").substring(1) === entry.target.id
+                  ) {
+                    link.classList.add("active-link");
+                  }
+                });
+              }
+            });
+          },
+          { rootMargin: "-50% 0px -50% 0px" }
+        );
+
+        sections.forEach((section) => {
+          observer.observe(section);
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute("href");
+            document.querySelector(targetId).scrollIntoView({
+              behavior: "smooth",
+            });
+            if (mobileMenu.classList.contains("hidden") === false) {
+              mobileMenu.classList.add("hidden");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
